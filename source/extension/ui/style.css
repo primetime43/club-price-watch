@@ -1,0 +1,13 @@
+:root { font-family: system-ui, sans-serif; color: #322526; background: #faf6f3; }
+body { margin: 0; } main { max-width: 850px; margin: 64px auto; padding: 32px; }
+h1 { font-size: clamp(30px, 4vw, 48px); line-height: 1.1; letter-spacing: -.04em; }
+p { line-height: 1.65; } .eyebrow { color: #a42b38; font-size: 12px; letter-spacing: .12em; font-weight: 750; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 28px 0; }
+button { background: #a42b38; color: white; border: 0; border-radius: 8px; padding: 13px 18px; font: inherit; cursor: pointer; }
+button:disabled { opacity: .55; cursor: wait; } a { color: #a42b38; } :focus-visible { outline: 3px solid #245f71; outline-offset: 4px; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; background: white; padding: 22px; border: 1px solid #e4d8d1; border-radius: 10px; min-height: 100px; line-height: 1.7; }
+.popup { width: 300px; padding: 20px; } .popup h1 { font-size: 24px; } .popup main { margin: 0; padding: 0; }
+.popup-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.popup-header h1 { margin: 0; }
+.popup .icon-button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 32px; height: 32px; padding: 0; background: transparent; color: #a42b38; }
+.popup .icon-button:hover { background: #f0e2df; }

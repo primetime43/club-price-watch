@@ -1,0 +1,9 @@
+# Use an image you built/imported yourself; no image archive is included.
+services:
+  club-price-watch:
+    image: club-price-watch:local
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

@@ -1,0 +1,12 @@
+services:
+  club-price-watch:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: club-price-watch:local
+    restart: unless-stopped
+    init: true
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data

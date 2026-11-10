@@ -1,0 +1,29 @@
+# Generated Windows distribution files (keep extension at its loaded path)
+/checker/package/BrowserExtension/
+/checker/package/tools/launcher.json
+/checker/package/tools/ClubPriceWatch.Checker.*
+/checker/package/Start Club Price Watch.bat
+**/bin/
+**/obj/
+*.log
+*.zip
+*.tar.gz
+/checker/package/Docker/*.tar
+
+# Local/private state
+**/data/
+**/.wrangler/
+**/.build/
+**/profiles/
+**/captures/
+**/logs/
+.env*
+*.sqlite*
+*.db
+*.csv
+*.har
+*.pfx
+*.p12
+*.pem
+backup*.json
+club-price-watch-*.json

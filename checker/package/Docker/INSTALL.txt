@@ -1,0 +1,9 @@
+DOCKER / SYNOLOGY SOURCE BUILD
+
+No public prebuilt image is assumed. Configure source/core/config.ts first.
+Use source/compose.yaml, or this compose.yaml with the repository layout intact.
+Both build source/docker/Dockerfile. Preserve persistent data.
+
+See source/docker/README.md for Container Manager, extension connection and updates.
+Never include account data, profiles, local databases or backups in a build context.
+Registry publication is manual-only and requires an explicit request.
