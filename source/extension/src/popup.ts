@@ -61,6 +61,7 @@ chrome.tabs.query({ active: true, currentWindow: true }).then(async ([tab]) => {
         return;
       }
       add.textContent = "Added to watchlist ✓";
+      if (!result.item.clubId) { status.textContent = "Added. Set this item’s recorded club number in the app before checking."; return; }
       status.textContent = result.existing ? "Already in your watchlist." : "Added. Its first price check is running in another tab.";
       watch(result.item.id);
     } catch { status.textContent = "Could not add this product. Check your connection and retry."; add.disabled = false; }

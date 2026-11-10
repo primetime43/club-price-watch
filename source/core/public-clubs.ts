@@ -6,6 +6,19 @@ import { addressKey, clubNumber, clubFromPickup } from "./clubs.ts";
 interface PublicClub { clubId: string; clubName: string; address: string; detailUrl: string }
 const PUBLIC_SEARCH = "https://api.bjs.com/digital/live/api/v1.2/club/search/10201";
 
+/** Accept only an observed public BJ’s locator link; never arbitrary fetch targets. */
+export function pickupLocatorUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  try {
+    const url = new URL(value, APP.bjsHome);
+    if (url.protocol !== "https:" || !["www.bjs.com", "bjs.com"].includes(url.hostname) || url.port || url.username || url.password || !url.pathname.startsWith("/clubLocatorDetail;")) return null;
+    const params = new URLSearchParams(url.pathname.slice("/clubLocatorDetail;".length).replaceAll(";", "&"));
+    const lat = Number(params.get("lat")), lng = Number(params.get("lng"));
+    if (!params.has("lat") || !params.has("lng") || !Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    return new URL(`clubLocatorDetail;radius=25;lat=${lat};lng=${lng}`, APP.bjsHome).href;
+  } catch { return null; }
+}
+
 /** Read only the public club records embedded in the locator/Club Details HTML. */
 export function publicClubs(html: string): PublicClub[] {
   if (html.length > 3 * 1024 * 1024) return [];
@@ -30,7 +43,7 @@ export function publicClubs(html: string): PublicClub[] {
 }
 
 /** No cookies/account APIs. No nearest-club guesses, fuzzy addresses or 403 retries. */
-export async function resolvePublicClubResult(address: string, fetcher: typeof fetch = fetch): Promise<{ club: ClubLocation | null; message: string }> {
+export async function resolvePublicClubResult(address: string, fetcher: typeof fetch = fetch, locator?: string): Promise<{ club: ClubLocation | null; message: string }> {
   const fail = (message: string) => ({ club: null, message });
   if (typeof address !== "string" || address.length > 300 || /[\u0000-\u001f\u007f]/.test(address)) return fail("Pickup address could not be read.");
   async function load(url: string) {
@@ -39,7 +52,8 @@ export async function resolvePublicClubResult(address: string, fetcher: typeof f
     return publicClubs(await response.text());
   }
   try {
-    const clubs = await load(APP.clubLocatorUrl);
+    if (locator && !pickupLocatorUrl(locator)) return fail("Pickup locator link could not be verified.");
+    const clubs = await load(locator ? pickupLocatorUrl(locator)! : new URL("clubLocator", APP.bjsHome).href);
     if (!clubs.length) return fail("Public locator returned no readable club records. Open BJ’s locator, then Scan again.");
     const candidates = clubs.filter(club => addressKey(club.address) === addressKey(address));
     if (candidates.length !== 1) return fail("Pickup address did not match exactly one nearby locator result. Club number remains unknown.");

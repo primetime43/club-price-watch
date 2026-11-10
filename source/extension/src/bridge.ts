@@ -21,7 +21,7 @@ if (!validNonce(nonce)) window.addEventListener("DOMContentLoaded", () => {
     try {
       const result = await chrome.runtime.sendMessage({ type: "CPW_QUICK_ADD", title: document.title });
       if (!result?.ok) throw new Error();
-      add.textContent = result.archived ? "Archived · restore from watchlist" : result.existing ? "Already watching ✓" : "Added · checking price ✓";
+      add.textContent = result.archived ? "Archived · restore from watchlist" : result.existing ? "Already watching ✓" : result.needsClub ? "Added · set a club in the app" : "Added · checking price ✓";
     } catch { add.textContent = "Could not add · retry"; add.disabled = false; }
   };
   shadow.append(add); document.body.append(host);

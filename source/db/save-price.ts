@@ -1,20 +1,20 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { getDb } from "./index.ts";
 import { trackedItems, priceChecks } from "./schema.ts";
-import { APP } from "../core/config.ts";
 
-export async function saveItemPrice(db: ReturnType<typeof getDb>, id: string, priceCents: number) {
+export async function saveItemPrice(db: ReturnType<typeof getDb>, id: string, priceCents: number, requestedClub?: string) {
   const [existing] = await db.select().from(trackedItems).where(eq(trackedItems.id, id)).limit(1);
   if (!existing) return "missing";
   if (existing.archivedAt !== null) return "archived";
-  if (existing.clubId !== null && existing.clubId !== APP.clubId) return "other-club";
+  if (!existing.clubId) return "missing-club";
+  if (requestedClub !== undefined && existing.clubId !== requestedClub) return "other-club";
   const now = new Date().toISOString();
-  const active = and(eq(trackedItems.id, id), isNull(trackedItems.archivedAt));
+  const active = and(eq(trackedItems.id, id), isNull(trackedItems.archivedAt), eq(trackedItems.clubId, existing.clubId));
   // Both writes commit together. A check queued before archiving cannot append a price afterward.
   const [updated] = await db.batch([
     db.update(trackedItems).set({
       previousPriceCents: sql`${trackedItems.currentPriceCents}`, currentPriceCents: priceCents,
-      lastCheckedAt: now, clubId: APP.clubId, clubName: APP.clubName,
+      lastCheckedAt: now,
     }).where(active).returning({ id: trackedItems.id }),
     db.insert(priceChecks).select(db.select({
       id: sql<number>`null`.as("id"),
@@ -22,8 +22,8 @@ export async function saveItemPrice(db: ReturnType<typeof getDb>, id: string, pr
       priceCents: sql<number>`${priceCents}`.as("price_cents"),
       source: sql<null>`null`.as("source"),
       purchaseLocation: sql<null>`null`.as("purchase_location"),
-      clubId: sql<string>`${APP.clubId}`.as("club_id"),
-      clubName: sql<string>`${APP.clubName}`.as("club_name"),
+      clubId: trackedItems.clubId,
+      clubName: trackedItems.clubName,
       checkedAt: sql<string>`${now}`.as("checked_at"),
     }).from(trackedItems).where(and(active, eq(trackedItems.lastCheckedAt, now)))),
   ]);

@@ -1,5 +1,4 @@
 import type { TrackedItem, HistoryPoint } from "./items.ts";
-import { APP } from "./config.ts";
 
 const DAY = 86400000;
 export const savedTime = (value: string | null) => value ? Date.parse(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value) ? value.replace(" ", "T") + "Z" : value) : NaN;
@@ -10,12 +9,13 @@ export interface OverviewRow {
 }
 
 /** All calculations use full history. Unknown/other clubs and future observations never supply comparisons. */
-export function buildOverview(all: TrackedItem[], now = Date.now(), clubId: string = APP.clubId, includeArchived = false) {
-  const clubs = new Map<string, string>([[APP.clubId, APP.clubName]]);
+export function buildOverview(all: TrackedItem[], now = Date.now(), clubId?: string, includeArchived = false) {
+  const clubs = new Map<string, string>();
   for (const item of all) {
     if (item.clubId) clubs.set(item.clubId, item.clubName || `Club ${item.clubId}`);
     for (const point of item.history) if (point.clubId) clubs.set(point.clubId, point.clubName || `Club ${point.clubId}`);
   }
+  clubId ??= all.find(item => item.clubId && (includeArchived || item.archivedAt === null))?.clubId ?? [...clubs.keys()][0] ?? "";
   const selected = all.filter(item => item.clubId === clubId && (includeArchived || item.archivedAt === null));
   const pairs: OverviewRow[] = [];
   const opportunities: { id: string; name: string; current: number; checkedAt: string; stale: boolean; low: boolean; belowPurchase: number; target: boolean; records: number }[] = [];
@@ -81,7 +81,7 @@ export function buildOverview(all: TrackedItem[], now = Date.now(), clubId: stri
   const up = pairs.filter(p => p.delta > 0).sort((a, b) => b.delta - a.delta || a.name.localeCompare(b.name));
   const down = pairs.filter(p => p.delta < 0).sort((a, b) => a.delta - b.delta || a.name.localeCompare(b.name));
   return {
-    generatedAt: new Date(now).toISOString(), clubId, clubName: clubs.get(clubId) ?? `Club ${clubId}`, includeArchived,
+    generatedAt: new Date(now).toISOString(), clubId, clubName: clubs.get(clubId) ?? (clubId ? `Club ${clubId}` : "No recorded club"), includeArchived,
     clubs: [...clubs].map(([id, name]) => ({ id, name })),
     basket: { matched: pairs.length, eligible: selected.length, previous: pairs.length ? previousBasket : null, current: pairs.length ? currentBasket : null, delta: pairs.length ? currentBasket - previousBasket : null, percent: pairs.length ? (currentBasket - previousBasket) / previousBasket * 100 : null, stale: pairs.filter(p => p.stale).length, currentTotal: currentCount ? currentTotal : null, currentCount },
     movement: { up: up.length, down: down.length, unchanged: pairs.length - up.length - down.length, increases: up.slice(0, 5), decreases: down.slice(0, 5) },

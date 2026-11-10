@@ -1,8 +1,8 @@
 # Public release preparation
 
 This separate source snapshot contains no copied Git history, remote configuration,
-local databases, browser data, credentials or image archives. Club settings are synthetic
-examples: configure your club before building/using live checks.
+local databases, browser data, credentials or image archives. Club selection comes from
+reviewed imported item locations; no personal/default store configuration is included.
 
 Prefer a **new repository with one reviewed initial commit**. Keep the existing private
 repository and installed app intact. Do not import/merge old history or push old branches

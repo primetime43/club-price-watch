@@ -8,7 +8,7 @@ import { DatabaseSync } from "node:sqlite";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "../db/schema.ts";
 import { openSqlite, migrateSqlite } from "../server/sqlite.ts";
-import { addItem } from "../db/add-item.ts";
+import { addItem } from "./fixtures.ts";
 import { saveItemPrice } from "../db/save-price.ts";
 import { setShoppingList } from "../db/shopping-list.ts";
 import { setArchived } from "../db/archive.ts";

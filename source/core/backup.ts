@@ -11,7 +11,7 @@ export interface BackupItem extends ClubLocation {
   aliases?: (ClubLocation & { url: string })[];
   history: (ClubLocation & { priceCents: number; checkedAt: string; source?: "purchase"; purchaseLocation?: string })[];
 }
-export interface WatchlistBackup { format: "club-price-watch"; version: 3 | 4; clubId: string; exportedAt: string; items: BackupItem[] }
+export interface WatchlistBackup { format: "club-price-watch"; version: 3 | 4; clubId?: string | null; exportedAt: string; items: BackupItem[] }
 export type RestoreMode = "missing" | "replace";
 export class BackupError extends Error {}
 const invalid = (message: string): never => { throw new BackupError(message); };
@@ -27,7 +27,7 @@ function cents(value: unknown, nullable = true): number | null {
 }
 export function parseBackup(value: unknown): WatchlistBackup {
   const data = record(value);
-  if (data?.format !== "club-price-watch" || ![1, 2, 3, 4].includes(Number(data.version)) || typeof data.version !== "number" || typeof data.clubId !== "string" || !/^[1-9]\d{0,5}$/.test(data.clubId) || !Array.isArray(data.items))
+  if (data?.format !== "club-price-watch" || ![1, 2, 3, 4].includes(Number(data.version)) || typeof data.version !== "number" || ((data.version !== 4 || data.clubId != null) && (typeof data.clubId !== "string" || !/^[1-9]\d{0,5}$/.test(data.clubId))) || !Array.isArray(data.items))
     return invalid("Choose a version-1, version-2, version-3 or version-4 Club Price Watch backup.");
   function location(value: unknown): ClubLocation {
     if (data!.version === 1) return { clubId: null, clubName: null };
@@ -73,7 +73,7 @@ export function parseBackup(value: unknown): WatchlistBackup {
       }).sort((a, b) => a.checkedAt.localeCompare(b.checkedAt)),
     };
   });
-  return { format: "club-price-watch", version: 4, clubId: data.clubId, exportedAt: date(data.exportedAt), items };
+  return { format: "club-price-watch", version: 4, clubId: typeof data.clubId === "string" ? data.clubId : null, exportedAt: date(data.exportedAt), items };
 }
 export function parseBackupFile(contents: string): WatchlistBackup {
   if (new TextEncoder().encode(contents).byteLength > BACKUP_MAX_BYTES) return invalid("Backup files must be 20 MB or smaller.");

@@ -34,6 +34,8 @@ export interface ItemInput {
   imageUrl?: string;
   currentPrice?: number | null;
   targetPrice?: number | null;
+  clubId?: string | null;
+  clubName?: string | null;
 }
 export interface ProductPreview {
   name: string | null;
@@ -41,7 +43,7 @@ export interface ProductPreview {
   itemNumber: string | null;
   price: number | null;
 }
-export type CheckItem = Pick<TrackedItem, "id" | "name" | "url">;
+export type CheckItem = Pick<TrackedItem, "id" | "name" | "url" | "clubId" | "clubName">;
 export interface ItemEdit { name: string; targetPrice: number | null }
 
 export function shoppingListValue(value: unknown): boolean {

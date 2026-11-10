@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { database } from "./database.ts";
-import { addItem } from "../db/add-item.ts";
+import { addItem } from "./fixtures.ts";
 import { mergeItems } from "../db/merge.ts";
 import { trackedItems, priceChecks, itemAliases } from "../db/schema.ts";
 import { exportBackup, restoreBackup } from "../db/backup.ts";
@@ -18,11 +18,13 @@ test("unknown-location links remain conservative after the kept item gets its fi
     const keep = (await addItem(a.db, { name: "Keep", url: PRODUCT_URL }, unknown)).item;
     const source = (await addItem(a.db, { name: "Source", url: other }, unknown)).item;
     await mergeItems(a.db, source.id, keep.id);
-    await saveItemPrice(a.db, keep.id, 499);
+    assert.equal(await saveItemPrice(a.db, keep.id, 499), "missing-club");
+    await a.db.update(trackedItems).set({ clubId: "111", clubName: "Example" }).where(eq(trackedItems.id, keep.id));
+    assert.equal(await saveItemPrice(a.db, keep.id, 499), "saved");
     const backup = await exportBackup(a.db);
     assert.equal(backup.items[0].aliases?.[0].clubId, null);
     await restoreBackup(b.db, backup, "replace");
-    assert.equal((await addItem(b.db, { name: "Again", url: other })).existing, true);
+    assert.equal((await addItem(b.db, { name: "Again", url: other }, { clubId: "111", clubName: "Example" })).existing, true);
   } finally { a.close(); b.close(); }
 });
 

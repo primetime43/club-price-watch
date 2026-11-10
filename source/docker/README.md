@@ -1,7 +1,7 @@
 # Docker / Synology
 
-Configure ../core/config.ts before building. The source ships example club settings and
-does not assume a pre-published registry image. From source/:
+Club locations come from imported items; no default store needs configuring.
+No pre-published registry image is assumed. From source/:
 
 ```sh
 docker compose up -d --build
@@ -32,8 +32,8 @@ pages. Finish checks before switching. Server uptime is not an unattended checki
 
 ## Optional registry publication
 
-The workflow .github/workflows/publish-container.yml is manual-only. After review and club
-configuration, explicitly run Actions > Publish container > Run workflow on main. It checks,
+The workflow .github/workflows/publish-container.yml is manual-only. After review,
+explicitly run Actions > Publish container > Run workflow on main. It checks,
 builds and smoke-tests amd64 before publishing latest/sha tags to the repository’s own
 namespace using its GITHUB_TOKEN. Never commit registry tokens.
 

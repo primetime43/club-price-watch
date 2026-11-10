@@ -5,7 +5,7 @@ import { database } from "./database.ts";
 import { item, PRODUCT_URL } from "./fixtures.ts";
 import { archiveValue } from "../core/items.ts";
 import { createItemsClient } from "../core/api.ts";
-import { addItem } from "../db/add-item.ts";
+import { addItem } from "./fixtures.ts";
 import { setArchived, listItems } from "../db/archive.ts";
 import { readItemHistory } from "../db/history.ts";
 import { saveItemPrice } from "../db/save-price.ts";
@@ -79,7 +79,7 @@ test("v3 backups round-trip archived items and full history; old backups import 
     await restoreBackup(b.db, { ...backup, items: backup.items.map(item => ({ ...item, archivedAt: null })) }, "missing");
     assert.ok((await listItems(b.db, true))[0].archivedAt);
     for (const version of [1, 2]) {
-      const legacy = parseBackup({ ...backup, version, items: backup.items.map(({ archivedAt, ...item }) => item) });
+      const legacy = parseBackup({ ...backup, clubId: "555", version, items: backup.items.map(({ archivedAt, ...item }) => item) });
       assert.equal(legacy.items[0].archivedAt, null);
     }
     assert.throws(() => parseBackup({ ...backup, items: backup.items.map(item => ({ ...item, archivedAt: false })) }), /invalid date/);

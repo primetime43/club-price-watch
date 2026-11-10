@@ -1,6 +1,6 @@
-import type { ProductPreview } from "../../../core/items.ts";
 import { APP } from "../../../core/config.ts";
-import { productId, priceUrl, readClubPrice } from "../../../core/prices.ts";
+import type { ProductPreview } from "../../../core/items.ts";
+import { productId } from "../../../core/prices.ts";
 
 function validProductUrl(raw: string) {
   if (!productId(raw)) {
@@ -67,43 +67,12 @@ function findProductJson(value: unknown): Record<string, unknown> | null {
   return null;
 }
 
-async function fetchClubPrice(url: URL, clubId: string) {
-  const id = productId(url.href);
-  if (!id) return null;
-  const endpoint = priceUrl(id, clubId);
-
-  try {
-    const response = await fetch(endpoint, {
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        Origin: "https://www.bjs.com",
-        Referer: url.toString(),
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-        "x-ibm-client-id": APP.publicClientId,
-      },
-      cache: "no-store",
-      signal: AbortSignal.timeout(APP.requestTimeoutMs),
-    });
-    if (!response.ok) return null;
-    const reading = readClubPrice(await response.json(), clubId);
-    return reading.ok ? reading.price : null;
-  } catch {
-    return null;
-  }
-}
-
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as { url?: string; clubId?: string };
     if (!payload.url) return Response.json({ error: "Paste a BJ’s product link." }, { status: 400 });
     const url = validProductUrl(payload.url);
-    const clubId = /^\d{1,4}$/.test(payload.clubId ?? "") ? payload.clubId! : APP.clubId;
     const fallback = fallbackPreview(url);
-    const clubPrice = await fetchClubPrice(url, clubId);
-    if (clubPrice !== null) {
-      return Response.json({ preview: { ...fallback, price: clubPrice }, source: "club-price", clubId });
-    }
     let response: Response;
     try {
       response = await fetch(url, {
@@ -143,7 +112,7 @@ export async function POST(request: Request) {
         html.match(/Item:\s*([0-9]+)/i)?.[1] ??
         idFromUrl,
       // Generic page offers may belong to a different club. Only the club parser
-      // above can establish a configured-club price; metadata remains anonymous.
+      // is the only price parser; anonymous metadata is never a club-price check.
       price: null,
     };
     return Response.json({ preview, source: "page" });

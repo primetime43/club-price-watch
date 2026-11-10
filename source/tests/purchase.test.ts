@@ -37,7 +37,7 @@ test("pickup address resolution requires an exact verified address or public clu
   assert.equal(clubFromPickup("100 Example Road Example City PA 15000"), null);
   assert.equal(clubFromPickup("100 Unverified Road Example City PA 15000"), null);
   assert.equal(clubFromPickup("100 Unverified Road", "https://maps.example.com/?clubId=111"), null);
-  assert.deepEqual(clubFromPickup("Club #0111"), { clubId: "111", clubName: "BJ’s" });
+  assert.deepEqual(clubFromPickup("Club #0111"), { clubId: "111", clubName: "Club 111" });
   assert.deepEqual(clubFromPickup("100 Example Road", "/cl/example-club/0111/"), { clubId: "111", clubName: "Example Club" });
   for (const href of ["https://example.com/cl/example/0111", "http://www.bjs.com/cl/example/0111", "https://user@www.bjs.com/cl/example/0111", "https://www.bjs.com:123/cl/example/0111"])
     assert.equal(clubFromPickup("Unverified address", href), null);
@@ -88,7 +88,7 @@ test("order price adapter uses Item Price, never total, quantity, SKU or whole r
 test("historical purchases preserve current state, serialize repeat imports, retain unknown locations and survive backup", async () => {
   const a = database(); const b = database();
   try {
-    await a.db.insert(trackedItems).values({ id: "one", name: "Test", url: PRODUCT_URL, onShoppingList: true });
+    await a.db.insert(trackedItems).values({ id: "one", name: "Test", url: PRODUCT_URL, clubId: "555", clubName: "Test club", onShoppingList: true });
     await saveItemPrice(a.db, "one", 299);
     const before = await a.db.select().from(trackedItems);
     const purchase = { price: 1.49, date: "2026-01-01" };
@@ -115,7 +115,7 @@ test("historical purchases preserve current state, serialize repeat imports, ret
 test("purchase location persists through history/backup and distinguishes repeat imports at different clubs", async () => {
   const a = database(); const b = database();
   try {
-    await a.db.insert(trackedItems).values({ id: "one", name: "Test", url: PRODUCT_URL });
+    await a.db.insert(trackedItems).values({ id: "one", name: "Test", url: PRODUCT_URL, clubId: "555", clubName: "Test club" });
     await saveItemPrice(a.db, "one", 299);
     const before = await a.db.select().from(trackedItems);
     const purchase = { price: 1.49, date: "2026-01-05", clubId: "111", clubName: "Example Club" };

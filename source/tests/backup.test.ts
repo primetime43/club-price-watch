@@ -1,3 +1,4 @@
+import { TEST_CLUB } from "./fixtures.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
@@ -10,11 +11,11 @@ import { APP } from "../core/config.ts";
 import { PRODUCT_URL } from "./fixtures.ts";
 
 function backup(): WatchlistBackup {
-  return { format: "club-price-watch", version: 3, clubId: APP.clubId, exportedAt: "2026-11-08T09:00:00.000Z", items: [{
-    clubId: APP.clubId, clubName: "Test club", name: "Test item", url: PRODUCT_URL, itemNumber: "123", imageUrl: null,
+  return { format: "club-price-watch", version: 3, clubId: TEST_CLUB.clubId, exportedAt: "2026-11-08T09:00:00.000Z", items: [{
+    clubId: TEST_CLUB.clubId, clubName: "Test club", name: "Test item", url: PRODUCT_URL, itemNumber: "123", imageUrl: null,
     currentPriceCents: 999, previousPriceCents: 1099, targetPriceCents: 899,
     lastCheckedAt: "2026-11-08T08:00:00.000Z", createdAt: "2026-01-01T00:00:00.000Z", archivedAt: null, onShoppingList: false,
-    history: Array.from({ length: 75 }, (_, i) => ({ clubId: APP.clubId, clubName: "Test club", priceCents: 999 + i, checkedAt: new Date(Date.UTC(2026, 0, i + 1)).toISOString() })),
+    history: Array.from({ length: 75 }, (_, i) => ({ clubId: TEST_CLUB.clubId, clubName: "Test club", priceCents: 999 + i, checkedAt: new Date(Date.UTC(2026, 0, i + 1)).toISOString() })),
   }] };
 }
 

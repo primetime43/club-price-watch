@@ -14,7 +14,7 @@
 
 ## Responsibilities
 
-- core/config.ts: origin, club, stable extension identity, versions and deadlines.
+- core/config.ts: origin, stable extension identity, versions and deadlines; no default club.
 - core/prices.ts: sole price parser. core/items.ts: models/validation.
 - core/api.ts: client; checks.ts: execution; protocol.ts: validated messages.
 - core/overview.ts: full-history same-club calculations; unknown locations stay unknown.
@@ -51,3 +51,9 @@ Generate browser JS from TypeScript; never edit bundles or add ZIP/source-downlo
 Run npm run check and relevant builds, using synthetic fixtures/disposable databases.
 A successful build/opened tab is not proof of authenticated checking. State unverified
 browser flows. Full Windows release also needs .NET 8 SDK.
+
+Checks must use each item’s recorded clubId, carried in nonce-marked tabs and price saves.
+Reject unknown locations and mismatched club saves; never fall back to a global store.
+Imports retain reviewed tracking locations even without purchase prices. Preserve unknown
+historical provenance. New V4 backups need no global club header. Protocol 3 rejects old
+extensions that do not carry per-item club identity.

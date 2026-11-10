@@ -39,7 +39,7 @@ export interface CheckDependencies {
   items: CheckItem[];
   dryRun: boolean;
   readPrice: (item: CheckItem) => Promise<number>;
-  savePrice: (id: string, price: number) => Promise<void>;
+  savePrice: (id: string, price: number, clubId: string) => Promise<void>;
   report?: (message: string) => void;
   progress?: (itemId: string, status: "checking" | "saved" | "tested" | "failed", message: string) => Promise<void>;
 }
@@ -49,10 +49,11 @@ export async function checkItems({ items, dryRun, readPrice, savePrice, report =
     if (!isIdentifier(item.id) || !productId(item.url)) continue;
     report(`Checking ${item.name}…`);
     try {
-      await progress(item.id, "checking", `Reading the ${APP.clubName} price in your browser…`).catch(() => {});
+      if (!item.clubId || !/^[1-9]\d{0,5}$/.test(item.clubId)) throw new CheckError("This item has no recorded club. Import it with a verified location or set its club before checking.");
+      await progress(item.id, "checking", `Reading the Club ${item.clubId} price in your browser…`).catch(() => {});
       const price = await readPrice(item);
       if (typeof price !== "number" || positivePrice(price) === null) throw new CheckError("No valid price was returned. No price was saved.");
-      if (!dryRun) await savePrice(item.id, price);
+      if (!dryRun) await savePrice(item.id, price, item.clubId);
       results.push({ id: item.id, name: item.name, price, status: dryRun ? "tested" : "recorded" });
       await progress(item.id, dryRun ? "tested" : "saved", dryRun ? "Test passed. No price was saved." : "Price checked and saved.").catch(() => {});
       report(`${dryRun ? "Verified" : "Recorded"} $${price.toFixed(2)} for ${item.name}.`);

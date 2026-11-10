@@ -31,17 +31,17 @@ test("one typed client validates and writes the public API contract", async () =
     return Response.json(init?.method === "PATCH" ? { ok: true } : { items: [item()] });
   });
   assert.equal((await api.list())[0].id, item().id);
-  await api.savePrice(item().id, 1999.99);
-  assert.deepEqual(JSON.parse(String(requests[1].init?.body)), { id: item().id, price: 1999.99 });
+  await api.savePrice(item().id, 1999.99, "555");
+  assert.deepEqual(JSON.parse(String(requests[1].init?.body)), { id: item().id, price: 1999.99, clubId: "555" });
   assert.equal(requests[1].url, "https://example.com/api/items");
-  await assert.rejects(api.savePrice(item().id, 0), CheckError);
+  await assert.rejects(api.savePrice(item().id, 0, "555"), CheckError);
   assert.equal(requests.length, 2);
 });
 test("malformed API data and failed writes are reported, not guessed", async () => {
   const malformed = createItemsClient("", async () => Response.json({ items: [{ id: "broken" }] }));
   await assert.rejects(malformed.list(), /invalid watchlist/);
   const unavailable = createItemsClient("", async () => Response.json({ error: "Unavailable" }, { status: 503 }));
-  await assert.rejects(unavailable.savePrice(item().id, 367.99), /Unavailable/);
+  await assert.rejects(unavailable.savePrice(item().id, 367.99, "555"), /Unavailable/);
   const invalidPreview = createItemsClient("", async () => Response.json({ preview: { name: "Product", price: "1999.99" } }));
   await assert.rejects(invalidPreview.preview(item().url), /invalid product details/);
   const validPreview = { name: "Product", imageUrl: null, itemNumber: null, price: 1999.99 };

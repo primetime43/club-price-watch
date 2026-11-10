@@ -43,7 +43,7 @@ test("public lookup matches the full pickup address then confirms the club-numbe
     return new Response(page(calls.length === 1 ? [neighbor, club] : [club]));
   };
   assert.deepEqual(await resolvePublicClub(address.replace("Road", "Rd."), fetcher), { clubId: "111", clubName: "Example Club, PA" });
-  assert.deepEqual(calls, [APP.clubLocatorUrl, "https://www.bjs.com/cl/example-city/0111"]);
+  assert.deepEqual(calls, [new URL("clubLocator", APP.bjsHome).href, "https://www.bjs.com/cl/example-city/0111"]);
 });
 
 test("unmatched/ambiguous addresses and blocked public pages stay unknown without guessing or retrying", async () => {

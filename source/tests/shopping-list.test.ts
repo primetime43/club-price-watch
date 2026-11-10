@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { database } from "./database.ts";
 import { PRODUCT_URL } from "./fixtures.ts";
-import { addItem } from "../db/add-item.ts";
+import { addItem } from "./fixtures.ts";
 import { listItems, setArchived } from "../db/archive.ts";
 import { setShoppingList } from "../db/shopping-list.ts";
 import { exportBackup, restoreBackup } from "../db/backup.ts";

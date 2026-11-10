@@ -32,7 +32,7 @@ test("browser adapter reads and cleans up only its own successful tab", async ()
   const f = browserFixture();
   assert.equal(await readPriceInTab(item(), { browser: f.browser, randomUUID: () => NONCE }), 367.99);
   assert.deepEqual(f.removed, [700]);
-  assert.equal(f.url(), `${PRODUCT_URL}#cpw-check=${NONCE}`);
+  assert.equal(f.url(), `${PRODUCT_URL}#cpw-check=${NONCE}&cpw-club=555`);
   assert.equal(f.listeners.size, 0);
 });
 test("failed tabs remain open and their listeners are removed", async () => {
@@ -53,18 +53,18 @@ test("unmatched responses time out without writing guessed prices", async () => 
   assert.deepEqual(f.removed, []);
 });
 test("result validation checks product, club, nonce, positivity and access status", () => {
-  assert.equal(resultPrice(priceMessage, PRODUCT_ID, NONCE), 367.99);
-  assert.equal(resultPrice({ ...priceMessage, clubId: "1" }, PRODUCT_ID, NONCE), null);
-  assert.equal(resultPrice({ ...priceMessage, productId: "1234567890" }, PRODUCT_ID, NONCE), null);
-  for (const price of [0, -1, NaN, Infinity, "367.99", true]) assert.throws(() => resultPrice({ ...priceMessage, price }, PRODUCT_ID, NONCE), CheckError);
-  assert.throws(() => resultPrice({ ...priceMessage, error: "hidden" }, PRODUCT_ID, NONCE), /member price/);
-  assert.throws(() => resultPrice({ ...priceMessage, status: 429 }, PRODUCT_ID, NONCE), /limiting/);
+  assert.equal(resultPrice(priceMessage, PRODUCT_ID, NONCE, "555"), 367.99);
+  assert.equal(resultPrice({ ...priceMessage, clubId: "1" }, PRODUCT_ID, NONCE, "555"), null);
+  assert.equal(resultPrice({ ...priceMessage, productId: "1234567890" }, PRODUCT_ID, NONCE, "555"), null);
+  for (const price of [0, -1, NaN, Infinity, "367.99", true]) assert.throws(() => resultPrice({ ...priceMessage, price }, PRODUCT_ID, NONCE, "555"), CheckError);
+  assert.throws(() => resultPrice({ ...priceMessage, error: "hidden" }, PRODUCT_ID, NONCE, "555"), /member price/);
+  assert.throws(() => resultPrice({ ...priceMessage, status: 429 }, PRODUCT_ID, NONCE, "555"), /limiting/);
 });
 test("the page adapter forwards only the canonical parser result, not raw responses", async () => {
   const published: unknown[] = [];
   let fetcher: typeof fetch = async () => Response.json({ bjsClubProduct: [saleProduct], privateDiagnostic: "do-not-forward" });
   const dummyXhr = { open: () => {}, send: () => {} } as Pick<XMLHttpRequest, "open" | "send">;
-  installPageReader({ href: `${PRODUCT_URL}#cpw-check=${NONCE}`, hash: `#cpw-check=${NONCE}`, xhrPrototype: dummyXhr,
+  installPageReader({ href: `${PRODUCT_URL}#cpw-check=${NONCE}&cpw-club=555`, hash: `#cpw-check=${NONCE}&cpw-club=555`, xhrPrototype: dummyXhr,
     fetch: fetcher, replaceFetch: next => { fetcher = next; }, publish: message => published.push(message), delay: () => {} });
   await fetcher(`${APP.priceEndpoint}?productId=${PRODUCT_ID}&clubId=555`);
   await new Promise(resolve => setImmediate(resolve));

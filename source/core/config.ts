@@ -1,14 +1,10 @@
 /** Deployment and browser identity. All other targets import or generate from this. */
 export const APP = {
   name: "Club Price Watch",
-  version: "2.1.13",
-  protocolVersion: 2,
+  version: "2.2.0",
+  protocolVersion: 3,
   siteOrigin: "http://localhost:3000",
   extensionId: "jikdpkkcmnlnadighofmmofapcmbkmaj",
-  clubId: "555",
-  clubName: "Example club",
-  // Example settings: configure your club and nearby locator URL before live use.
-  clubLocatorUrl: "https://www.bjs.com/clubLocator",
   bjsHome: "https://www.bjs.com/",
   priceEndpoint: "https://api.bjs.com/digital/live/api/v1.0/product/price/10201",
   publicClientId: "54b73032-9147-44f6-97f5-e1573b6e199d",

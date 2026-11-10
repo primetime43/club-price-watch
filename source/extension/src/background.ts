@@ -7,7 +7,7 @@ import { addAndCheck } from "./quick-add.ts";
 import { isOrderPage, purchasedProduct } from "../../core/purchased-items.ts";
 import { APP } from "../../core/config.ts";
 import { getServerOrigin } from "./connection.ts";
-import { resolvePublicClubResult } from "../../core/public-clubs.ts";
+import { pickupLocatorUrl, resolvePublicClubResult } from "../../core/public-clubs.ts";
 
 export function orderAddProduct(raw: unknown, sender: MessageSource, extensionId: string) {
   const message = record(raw);
@@ -35,20 +35,22 @@ export function registerBackground(browser: Pick<typeof chrome, "runtime" | "tab
     if (message?.type === "CPW_RESOLVE_PICKUP_CLUB") {
       const address = orderPickupAddress(raw, sender, browser.runtime.id);
       if (!address) return false;
-      resolvePublicClubResult(address).then(result => respond({ ok: true, ...result }), () => respond({ ok: false }));
+      const locator = message.locatorUrl === undefined ? undefined : pickupLocatorUrl(message.locatorUrl);
+      if (locator === null) { respond({ ok: false }); return false; }
+      resolvePublicClubResult(address, fetch, locator).then(result => respond({ ok: true, ...result }), () => respond({ ok: false }));
       return true;
     }
     if (message?.type === "CPW_ORDER_QUICK_ADD") {
       const product = orderAddProduct(raw, sender, browser.runtime.id);
       if (!product) return false;
-      addAndCheck(product.url, product.name, product.purchase)
-        .then(result => respond({ ok: true, existing: result.existing, archived: result.item.archivedAt !== null, itemId: result.item.id }), () => respond({ ok: false }));
+      addAndCheck(product.url, product.name, product.purchase, { clubId: product.clubId ?? null, clubName: product.clubName ?? null })
+        .then(result => respond({ ok: true, existing: result.existing, needsClub: !result.item.clubId, archived: result.item.archivedAt !== null, itemId: result.item.id }), () => respond({ ok: false }));
       return true;
     }
     if (message?.type === "CPW_QUICK_ADD") {
       if (sender.id !== browser.runtime.id || sender.frameId !== 0 || !productId(sender.url)) return false;
       addAndCheck(sender.url!, typeof message.title === "string" ? message.title : "")
-        .then(result => respond({ ok: true, existing: result.existing, archived: result.item.archivedAt !== null }), () => respond({ ok: false }));
+        .then(result => respond({ ok: true, existing: result.existing, needsClub: !result.item.clubId, archived: result.item.archivedAt !== null }), () => respond({ ok: false }));
       return true;
     }
     if (!parseRunnerRequest(raw)) return false;

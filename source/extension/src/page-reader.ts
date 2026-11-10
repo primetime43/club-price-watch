@@ -1,5 +1,5 @@
 import { APP } from "../../core/config.ts";
-import { matchesPriceResponse, productId, priceUrl, readClubPrice } from "../../core/prices.ts";
+import { normalizeClub, matchesPriceResponse, productId, priceUrl, readClubPrice } from "../../core/prices.ts";
 import { validNonce } from "../../core/protocol.ts";
 import type { PriceMessage } from "../../core/protocol.ts";
 
@@ -17,20 +17,21 @@ export interface PageEnvironment {
 export function installPageReader(env: PageEnvironment): void {
   const nonce = new URLSearchParams(env.hash.slice(1)).get("cpw-check");
   const id = productId(env.href);
-  if (!validNonce(nonce) || !id) return;
+  const clubId = normalizeClub(new URLSearchParams(env.hash.slice(1)).get("cpw-club"));
+  if (!validNonce(nonce) || !id || !/^[1-9]\d{0,5}$/.test(clubId)) return;
   let published = false;
   const publish = (value: Partial<Pick<PriceMessage, "status" | "price" | "error">>) => {
     if (published) return;
     published = true;
-    env.publish({ type: "CPW_PRICE_RESULT", nonce, productId: id, clubId: APP.clubId, status: null, price: null, error: null, ...value });
+    env.publish({ type: "CPW_PRICE_RESULT", nonce, productId: id, clubId, status: null, price: null, error: null, ...value });
   };
   const accept = (status: number, data: unknown) => {
     if (status < 200 || status >= 300) return publish({ status });
-    const reading = readClubPrice(data);
+    const reading = readClubPrice(data, clubId);
     publish(reading.ok ? { status, price: reading.price } : { status, error: reading.code });
   };
   const inspect = async (response: Response, url: string) => {
-    if (published || !matchesPriceResponse(url, id)) return;
+    if (published || !matchesPriceResponse(url, id, clubId)) return;
     if (!response.ok) return publish({ status: response.status });
     try { accept(response.status, await response.clone().json()); }
     catch { publish({ status: response.status, error: "non-json" }); }
@@ -45,7 +46,7 @@ export function installPageReader(env: PageEnvironment): void {
   const originalOpen = env.xhrPrototype.open;
   const originalSend = env.xhrPrototype.send;
   env.xhrPrototype.open = function (this: XMLHttpRequest, ...args: unknown[]) {
-    if (matchesPriceResponse(String(args[1]), id)) marked.add(this);
+    if (matchesPriceResponse(String(args[1]), id, clubId)) marked.add(this);
     else marked.delete(this);
     return Reflect.apply(originalOpen, this, args);
   } as typeof originalOpen;
@@ -60,7 +61,7 @@ export function installPageReader(env: PageEnvironment): void {
   };
   env.delay(() => {
     if (published) return;
-    const url = priceUrl(id);
+    const url = priceUrl(id, clubId);
     env.fetch(url, { credentials: "include", cache: "no-store", signal: AbortSignal.timeout(20_000),
       headers: { Accept: "application/json, text/plain, */*", "x-ibm-client-id": APP.publicClientId } })
       .then(response => inspect(response, url.href)).catch(() => publish({ error: "network" }));

@@ -2,7 +2,7 @@
 
 Run npm commands here. Node.js >=22.13 is required; Docker uses Node 24.
 Full Windows release needs the .NET 8 SDK in global.json.
-Configure example club fields in core/config.ts before live use.
+Clubs come from recorded item locations. No source-level store configuration is required.
 
 ```sh
 npm ci

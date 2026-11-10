@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { TrackedItem } from "../core/items.ts";
+import { clubNumber } from "../core/clubs.ts";
 import { itemCheckState } from "../core/checks.ts";
 import { priceChange as changeFor, targetReached, watchlistView } from "../core/watchlist-view.ts";
 import type { WatchlistFilter, WatchlistSort } from "../core/watchlist-view.ts";
@@ -92,7 +93,7 @@ export default function PriceTracker() {
   const [sort, setSort] = useState<WatchlistSort>("added");
   const [addOpen, setAddOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const [form, setForm] = useState({ url: "", name: "", currentPrice: "", targetPrice: "", itemNumber: "", imageUrl: "" });
+  const [form, setForm] = useState({ url: "", name: "", currentPrice: "", targetPrice: "", itemNumber: "", imageUrl: "", clubId: "" });
   const [previewing, setPreviewing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formMessage, setFormMessage] = useState<string | null>(null);
@@ -145,7 +146,7 @@ export default function PriceTracker() {
   }
 
   function resetAdd() {
-    setForm({ url: "", name: "", currentPrice: "", targetPrice: "", itemNumber: "", imageUrl: "" });
+    setForm({ url: "", name: "", currentPrice: "", targetPrice: "", itemNumber: "", imageUrl: "", clubId: "" });
     setFormMessage(null);
     setAddOpen(false);
   }
@@ -183,8 +184,11 @@ export default function PriceTracker() {
     setSaving(true);
     setFormMessage(null);
     try {
+      const recordedClub = form.clubId ? clubNumber(form.clubId) : null;
+      if (form.clubId && !recordedClub) throw new Error("Enter a valid recorded club number.");
       const result = await itemsClient.add({
         ...form,
+        clubId: recordedClub, clubName: recordedClub ? `Club ${recordedClub}` : null,
         currentPrice: form.currentPrice ? Number(form.currentPrice) : null,
         targetPrice: form.targetPrice ? Number(form.targetPrice) : null,
       });
@@ -195,6 +199,7 @@ export default function PriceTracker() {
         setNotice("This product is archived. Choose Restore to bring it back with its history.");
       }
       else if (result.existing) setNotice("Already in your watchlist. Existing details and price history were kept.");
+      else if (!result.item.clubId) setNotice("Item added. Set its recorded club number before checking.");
       else if (!form.currentPrice) openChecker(result.item.id);
       else setNotice("Item added to your watchlist.");
     } catch (error) {
@@ -303,15 +308,16 @@ export default function PriceTracker() {
                   </div>
                   <div className="product-info">
                     <h3><button className="history-item-name" aria-label={`View price history for ${item.name}`} onClick={() => setHistoryItemId(item.id)}>{item.name}</button></h3>
-                    <p className="item-location">{item.clubName && item.clubId ? <>{item.currentPriceCents === null ? "Tracking at" : "Price saved for"} <strong>{item.clubName}</strong> · Club {item.clubId}</> : "Location not recorded"}</p>
+                    <p className="item-location">{item.clubName && item.clubId ? <>{"Tracking at"} <strong>{item.clubName}</strong> · Club {item.clubId}</> : "Location not recorded"}</p>
                     <p>{item.itemNumber ? `Item ${item.itemNumber} · ` : ""}{relativeTime(item.lastCheckedAt)}</p>
                     {item.archivedAt !== null ? <div className="item-check-status"><span className="status-badge archived">Archived</span><span className="status-message">Excluded from price checks.</span></div> : <div className="item-check-status" role="status"><span className={`status-badge ${checkState.status}`}>{checkState.status === "tested" ? "Tested · not saved" : checkState.status.charAt(0).toUpperCase() + checkState.status.slice(1)}</span><span className="status-message">{checkState.message}</span></div>}
-                    {item.archivedAt === null ? <button className="check-price-link" onClick={() => openChecker(item.id)} disabled={checkBusy}>{checkBusy ? checkState.status === "waiting" ? "Waiting…" : "Checking…" : checkState.status === "failed" ? "Retry price check" : item.currentPriceCents === null ? "Check price now" : "Check price"}</button> : <button className="check-price-link" disabled={archiving !== null} onClick={() => void changeArchive(item)}>{archiving === item.id ? "Restoring…" : "Restore"}</button>}
+                    {item.archivedAt === null ? <button className="check-price-link" onClick={() => openChecker(item.id)} disabled={checkBusy || !item.clubId}>{checkBusy ? checkState.status === "waiting" ? "Waiting…" : "Checking…" : checkState.status === "failed" ? "Retry price check" : item.currentPriceCents === null ? "Check price now" : "Check price"}</button> : <button className="check-price-link" disabled={archiving !== null} onClick={() => void changeArchive(item)}>{archiving === item.id ? "Restoring…" : "Restore"}</button>}
                     <button className="edit-item" aria-label={`Edit ${item.name}`} onClick={() => {
                       setEditItem(item);
                       setEditForm({ name: item.name, targetPrice: item.targetPriceCents === null ? "" : (item.targetPriceCents / 100).toFixed(2) });
                       setEditError(null);
                     }}>Edit</button>
+                    {!item.clubId && <button className="edit-item" onClick={async () => { const club = window.prompt("Enter the recorded BJ’s club number for this item (from its purchase or Club Details page)."); if (!club) return; try { await itemsClient.location(item.id, club.trim().replace(/^0+/, "")); await loadItems(); } catch (error) { setNotice(error instanceof Error ? error.message : "Could not set club."); } }}>Set club</button>}
                     <button className="edit-item" disabled={checkBusy} onClick={() => setMergeItem(item)}>Merge</button>
                     <button className="edit-item" aria-label={`View price history for ${item.name}`} onClick={() => setHistoryItemId(item.id)}>History</button>
                     {item.archivedAt === null ? <button className="edit-item" aria-label={`Archive ${item.name}`} disabled={archiving !== null || checkBusy} onClick={() => void changeArchive(item)}>{archiving === item.id ? "Archiving…" : "Archive"}</button> : <button className="remove-item" aria-label={`Permanently remove ${item.name}`} onClick={() => { setRemoveError(null); setRemoveCandidate(item); }}>Remove</button>}
@@ -399,8 +405,9 @@ export default function PriceTracker() {
             <button className="modal-close" onClick={resetAdd} aria-label="Close">×</button>
             <p className="modal-step">NEW PRICE WATCH</p>
             <h2 id="add-title">Track a BJ’s item</h2>
-            <p className="modal-intro">Leave the starting price blank. Saving starts a price check in your normal browser when the Club Price Watch extension is connected.</p>
+            <p className="modal-intro">Leave the starting price blank. With a recorded club number, saving starts a price check in your normal browser when the extension is connected. Unknown locations stay unchecked.</p>
             <form onSubmit={addItem}>
+              <label>Recorded club number<input inputMode="numeric" pattern="[0-9]{1,6}" value={form.clubId} onChange={event => setForm({ ...form, clubId: event.target.value })} placeholder="Unknown until recorded" /></label>
               <label>BJ’s product link<input type="url" required pattern="https://(www\.)?bjs\.com/.*" title="Use a bjs.com product link" placeholder="https://www.bjs.com/product/..." value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} /></label>
               <button type="button" className="preview-button" onClick={() => void previewLink()} disabled={previewing}>{previewing ? "Reading link…" : "↗ Fill from product link"}</button>
               <label>Item name<input required placeholder="e.g. Fairlife milk, 52 fl. oz." value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>

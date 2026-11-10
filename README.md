@@ -14,18 +14,23 @@ or Docker host. Independent project; not affiliated with or endorsed by BJ’s.
 - JSON backup/restore for archived items, merged links and full history.
 - Windows startup and a production Docker/SQLite server.
 
-## Configure before use
+## Club locations come from your items
 
-The source ships with **example settings**. Edit source/core/config.ts before building:
+There is no global store ID, default club or location to edit in source code.
+An imported item's reviewed club number becomes its tracking location. Each price check
+requests that item's club and rejects prices from another club. Items at different clubs
+can be checked in the same run without changing configuration.
 
-- **clubId:** your BJ’s club number without leading zeroes, not the API store path.
-- **clubName:** the display name for that club.
-- **clubLocatorUrl:** the public nearby-club locator URL for your area.
+Import purchases with a verified club number, or use **Set club** for an item whose
+location is unknown. Manual adds also accept a recorded club number. Unknown-location
+items keep their history but cannot be checked until a location is supplied; no club is
+guessed. Imports without a purchase price still retain their reviewed club location.
+Public pickup links can provide a club ID or locator area dynamically; if a public lookup
+cannot verify a club, review the number instead of assuming the nearest store.
 
-Confirm the number using BJ’s public Club Details URL. Purchase-location lookup matches
-full addresses and verifies the corresponding detail page. Unknown locations remain
-unknown. Never put account details in configuration. Keep the extension ID, public key
-and protocol unchanged unless intentionally maintaining a different extension identity.
+The API path identifier in the price-service URL is not a club number. Keep the extension
+identity/public key unchanged. Version 2.2 uses protocol 3: rebuild/reload the extension
+and refresh app and product pages when upgrading; older protocols disconnect safely.
 
 ## Run on Windows
 

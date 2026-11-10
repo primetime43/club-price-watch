@@ -2,7 +2,6 @@ import { asc } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import type { getDb } from "./index.ts";
 import { trackedItems, priceChecks, itemAliases } from "./schema.ts";
-import { APP } from "../core/config.ts";
 import { parseBackup, BackupError } from "../core/backup.ts";
 import type { WatchlistBackup, RestoreMode } from "../core/backup.ts";
 import { productId } from "../core/prices.ts";
@@ -14,7 +13,7 @@ export async function exportBackup(db: Database): Promise<WatchlistBackup> {
   const [items, checks, aliases] = await db.batch([db.select().from(trackedItems).orderBy(asc(trackedItems.createdAt)), db.select().from(priceChecks).orderBy(asc(priceChecks.checkedAt), asc(priceChecks.id)), db.select().from(itemAliases)]);
   const history = new Map<string, typeof checks>();
   for (const point of checks) { const rows = history.get(point.itemId) ?? []; rows.push(point); history.set(point.itemId, rows); }
-  return parseBackup({ format: "club-price-watch", version: 4, clubId: APP.clubId, exportedAt: new Date().toISOString(),
+  return parseBackup({ format: "club-price-watch", version: 4, clubId: null, exportedAt: new Date().toISOString(),
     items: items.map(item => {
       const links = aliases.filter(alias => alias.itemId === item.id && productId(alias.url) !== productId(item.url)).map(({ url, clubId, clubName }) => ({ url, clubId, clubName }));
       return { ...item, ...(links.length ? { aliases: links } : {}), history: history.get(item.id) ?? [] };

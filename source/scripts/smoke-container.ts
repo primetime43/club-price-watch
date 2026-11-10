@@ -16,15 +16,15 @@ assert.ok(ready, "The production container API did not become ready.");
 assert.equal((await fetch(origin)).status, 200);
 let id: string | undefined;
 try {
-  const added = await api.add({ name: "Container verification", url: "https://www.bjs.com/product/container-verification/3000000000098765432", currentPrice: 12.34, targetPrice: 10 });
+  const added = await api.add({ name: "Container verification", url: "https://www.bjs.com/product/container-verification/3000000000098765432", clubId: "111", clubName: "Synthetic smoke club", currentPrice: 12.34, targetPrice: 10 });
   assert.equal(added.existing, false);
   id = added.item.id;
-  await api.savePrice(id, 11.99);
+  await api.savePrice(id, 11.99, "111");
   await api.shoppingList(id, true);
   assert.deepEqual((await api.history(id)).map(point => point.priceCents), [1234, 1199]);
   await api.archive(id, true);
   assert.equal((await api.list()).some(item => item.id === id), false);
-  await assert.rejects(api.savePrice(id, 1), /archived/);
+  await assert.rejects(api.savePrice(id, 1, "111"), /archived/);
   const backup = await (await fetch(`${origin}/api/backup`)).json();
   assert.equal(backup.items[0].onShoppingList, true);
   assert.ok(backup.items[0].archivedAt);

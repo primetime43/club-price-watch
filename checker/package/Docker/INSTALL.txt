@@ -1,6 +1,6 @@
 DOCKER / SYNOLOGY SOURCE BUILD
 
-No public prebuilt image is assumed. Configure source/core/config.ts first.
+No public prebuilt image is assumed. Club locations come from recorded items.
 Use source/compose.yaml, or this compose.yaml with the repository layout intact.
 Both build source/docker/Dockerfile. Preserve persistent data.
 

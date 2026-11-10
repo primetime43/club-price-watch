@@ -14,6 +14,10 @@ export function createItemsClient(base = "", fetcher: typeof fetch = fetch) {
   }
   const json = (method: string, body: unknown): RequestInit => ({ method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   return {
+    async location(id: string, clubId: string): Promise<void> {
+      if (!isIdentifier(id) || !/^[1-9]\d{0,5}$/.test(clubId)) throw new CheckError("Enter a valid club number.");
+      await request("/api/items", json("PATCH", { id, clubId, clubName: `Club ${clubId}` }));
+    },
     async merge(sourceId: string, keepId: string): Promise<void> {
       if (!isIdentifier(sourceId) || !isIdentifier(keepId) || sourceId === keepId) throw new CheckError("Choose two different items.");
       await request("/api/items/merge", json("POST", { sourceId, keepId, confirm: true }));
@@ -55,12 +59,12 @@ export function createItemsClient(base = "", fetcher: typeof fetch = fetch) {
       if (!isTrackedItem(data.item)) throw new CheckError("The local app did not return the saved item.");
       return { item: data.item, existing: data.existing === true };
     },
-    async savePrice(id: string, price: number): Promise<void> {
-      if (!isIdentifier(id) || priceToCents(price) === null) throw new CheckError("Only a valid positive price can be saved.");
-      await request("/api/items", json("PATCH", { id, price }));
+    async savePrice(id: string, price: number, clubId: string): Promise<void> {
+      if (!isIdentifier(id) || priceToCents(price) === null || !/^[1-9]\d{0,5}$/.test(clubId)) throw new CheckError("Only a valid positive price can be saved.");
+      await request("/api/items", json("PATCH", { id, price, clubId }));
     },
     async preview(url: string): Promise<ProductPreview> {
-      const data = await request("/api/preview", json("POST", { url, clubId: APP.clubId }));
+      const data = await request("/api/preview", json("POST", { url }));
       if (!isProductPreview(data.preview)) throw new CheckError("The local app returned invalid product details.");
       return data.preview;
     },

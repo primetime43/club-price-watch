@@ -1,6 +1,6 @@
 CLUB PRICE WATCH — WINDOWS OUTPUT
 
-Configure source/core/config.ts. Build from source/ with npm ci, npm run check and
+Clubs come from recorded item locations. Build from source/ with npm ci, npm run check and
 npm run release. Full release needs .NET 8 SDK; native execution needs .NET 8 Runtime.
 
 Start with Start Club Price Watch.bat in the repository root (two folders up).

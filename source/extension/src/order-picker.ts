@@ -19,7 +19,7 @@ if (isOrderPage(location.href) && window === window.top) {
   const close = document.createElement("button"); close.className = "close"; close.textContent = "×"; close.setAttribute("aria-label", "Close");
   const heading = document.createElement("h2"); heading.textContent = "Track purchased items";
   const intro = document.createElement("p"); intro.textContent = "Review the product links found on this page and choose what to track.";
-  const note = document.createElement("p"); note.className = "help"; note.textContent = "New products are checked at your configured club. Optional purchase prices go into history with the order date and pickup club shown below. Review Item Price (per unit), not Total Price. Clear a price to skip it. Keep the Price Watch app running.";
+  const note = document.createElement("p"); note.className = "help"; note.textContent = "New products are checked at their imported pickup club. Items without a verified club need a club number before checking. Optional purchase prices go into history with the order date and pickup club shown below. Review Item Price (per unit), not Total Price. Clear a price to skip it. Keep the Price Watch app running.";
   const dateLabel = document.createElement("label"); dateLabel.textContent = "Order date ";
   dateLabel.style.display = "block";
   const purchaseDate = document.createElement("input"); purchaseDate.type = "date"; dateLabel.append(purchaseDate);
@@ -53,7 +53,7 @@ if (isOrderPage(location.href) && window === window.top) {
       resolvingClub = true;
       const revision = clubRevision;
       detection.textContent = "Finding the pickup address in the public club locator…";
-      void chrome.runtime.sendMessage({ type: "CPW_RESOLVE_PICKUP_CLUB", address: details.pickupAddress }).then(response => {
+      void chrome.runtime.sendMessage({ type: "CPW_RESOLVE_PICKUP_CLUB", address: details.pickupAddress, locatorUrl: details.pickupLocatorUrl }).then(response => {
         if (epoch !== lookupEpoch) return;
         if (revision !== clubRevision) { detection.textContent = "Pickup club number entered manually. Review before importing."; return; }
         const club = response?.ok && isClubLocation(response.club) && response.club.clubId ? response.club : null;
@@ -107,14 +107,14 @@ if (isOrderPage(location.href) && window === window.top) {
     for (const [id, row] of selected) {
       row.result.textContent = "Adding…";
       try {
-        const response = await chrome.runtime.sendMessage({ type: "CPW_ORDER_QUICK_ADD", product: { url: row.url, name: row.name, ...(purchases.has(id) ? { purchase: purchases.get(id) } : {}) } });
+        const response = await chrome.runtime.sendMessage({ type: "CPW_ORDER_QUICK_ADD", product: { url: row.url, name: row.name, ...(purchaseClub.value.trim() ? { clubId: clubNumber(purchaseClub.value), clubName: detectedClub?.clubId === clubNumber(purchaseClub.value) ? detectedClub.clubName : clubNameForId(clubNumber(purchaseClub.value)!) } : {}), ...(purchases.has(id) ? { purchase: purchases.get(id) } : {}) } });
         if (!response?.ok || !isIdentifier(response.itemId)) throw new Error();
         if (response.existing) { existing++; row.result.textContent = response.archived ? "Archived · restore from watchlist" : "Already watching ✓"; }
-        else { added++; row.result.textContent = "Added · checking price…"; }
+        else { added++; row.result.textContent = response.needsClub ? "Added · set club in watchlist before checking" : "Added · checking price…"; }
         if (purchases.has(id)) row.result.textContent += " · purchase saved to history";
         row.input.checked = false;
         subscriptions.get(id)?.();
-        if (response.archived || response.existing) continue;
+        if (response.archived || response.existing || response.needsClub) continue;
         subscriptions.set(id, watchQuickAddResult(response.itemId, message => { row.result.textContent = message + (purchases.has(id) ? " · purchase saved to history" : ""); }));
       } catch { failed++; row.result.textContent = "Could not finish import. Check the app connection and server update, then retry. Saved purchases will not be duplicated."; }
     }

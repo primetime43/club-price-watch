@@ -4,7 +4,7 @@ import { buildOverview } from "../core/overview.ts";
 import type { TrackedItem, HistoryPoint } from "../core/items.ts";
 import { database } from "./database.ts";
 import { readOverview } from "../db/overview.ts";
-import { addItem } from "../db/add-item.ts";
+import { addItem } from "./fixtures.ts";
 import { priceChecks } from "../db/schema.ts";
 import { PRODUCT_URL } from "./fixtures.ts";
 

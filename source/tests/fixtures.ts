@@ -11,3 +11,7 @@ export function item(overrides: Partial<TrackedItem> = {}): TrackedItem {
     clubId: "555", clubName: "Test club", currentPriceCents: null, previousPriceCents: null, targetPriceCents: null, lastCheckedAt: null, archivedAt: null, onShoppingList: false, history: [], ...overrides };
 }
 export const priceMessage = { type: "CPW_PRICE_RESULT", nonce: NONCE, productId: PRODUCT_ID, clubId: "0555", status: 200, price: 367.99, error: null };
+
+import { addItem as addRecordedItem } from "../db/add-item.ts";
+export const TEST_CLUB = { clubId: "555", clubName: "Test club" };
+export const addItem: typeof addRecordedItem = (db, input, location = TEST_CLUB) => addRecordedItem(db, input, location);

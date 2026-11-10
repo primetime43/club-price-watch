@@ -22,13 +22,14 @@ export function productId(value: unknown): string | null {
       ? url.pathname.match(/\/(\d{10,})\/?$/)?.[1] ?? null : null;
   } catch { return null; }
 }
-export function priceUrl(id: string, clubId: string = APP.clubId): URL {
+export function priceUrl(id: string, clubId: string): URL {
+  if (!/^[1-9]\d{0,5}$/.test(normalizeClub(clubId))) throw new Error("A recorded club number is required.");
   const url = new URL(APP.priceEndpoint);
   url.search = new URLSearchParams({ productId: id, pageName: "PDP", clubId: normalizeClub(clubId) }).toString();
   return url;
 }
-export function matchesPriceResponse(value: unknown, id: string, clubId: string = APP.clubId): boolean {
-  if (typeof value !== "string") return false;
+export function matchesPriceResponse(value: unknown, id: string, clubId: string): boolean {
+  if (typeof value !== "string" || !/^[1-9]\d{0,5}$/.test(normalizeClub(clubId))) return false;
   try {
     const url = new URL(value);
     const endpoint = new URL(APP.priceEndpoint);
@@ -39,7 +40,8 @@ export function matchesPriceResponse(value: unknown, id: string, clubId: string 
 }
 
 /** The only BJ's club-price parser, used by both the Worker and browser bundle. */
-export function readClubPrice(value: unknown, clubId: string = APP.clubId): PriceReading {
+export function readClubPrice(value: unknown, clubId: string): PriceReading {
+  if (!/^[1-9]\d{0,5}$/.test(normalizeClub(clubId))) return { ok: false, code: "wrong-club" };
   const root = record(value);
   if (!root) return { ok: false, code: "invalid-response" };
   const entries = Array.isArray(root.bjsClubProduct) ? root.bjsClubProduct : [root.bjsClubProduct];

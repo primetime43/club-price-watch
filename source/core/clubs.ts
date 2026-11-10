@@ -8,7 +8,7 @@ export function clubNumber(value: unknown): string | null {
 }
 
 export function clubNameForId(id: string): string {
-  return id === APP.clubId ? APP.clubName : "BJ’s";
+  return `Club ${id}`;
 }
 
 export const addressKey = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()
@@ -27,7 +27,7 @@ export function clubFromPickup(text: string, href?: string | null): ClubLocation
       const match = /^\/cl\/([a-z0-9-]+)\/(\d{1,6})\/?$/i.exec(url.pathname);
       const id = clubNumber(match?.[2]);
       if (id && url.protocol === "https:" && ["www.bjs.com", "bjs.com"].includes(url.hostname) && !url.port && !url.username && !url.password) {
-        const name = id === APP.clubId ? APP.clubName : match![1].replaceAll("-", " ").replace(/\b\w/g, c => c.toUpperCase()).slice(0, 100);
+        const name = match![1].replaceAll("-", " ").replace(/\b\w/g, c => c.toUpperCase()).slice(0, 100);
         candidates.set(id, { clubId: id, clubName: name });
       }
     } catch { /* An unrecognized map link is not a club identity. */ }

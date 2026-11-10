@@ -11,25 +11,25 @@ const date = (value: string) => new Intl.DateTimeFormat("en-US", { dateStyle: "m
 const month = (value: string) => new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(value + "-01T00:00:00Z"));
 
 export default function Overview({ items, onHistory }: { items: TrackedItem[]; onHistory: (id: string) => void }) {
-  const [clubId, setClubId] = useState<string>(APP.clubId);
+  const [clubId, setClubId] = useState<string>("");
   const [includeArchived, setIncludeArchived] = useState(false);
   const [data, setData] = useState<OverviewData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [retry, setRetry] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    void fetch(`/api/overview?clubId=${encodeURIComponent(clubId)}&includeArchived=${includeArchived ? "1" : "0"}`, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(APP.requestTimeoutMs)]) })
+    void fetch(`/api/overview?${clubId ? `clubId=${encodeURIComponent(clubId)}&` : ""}includeArchived=${includeArchived ? "1" : "0"}`, { cache: "no-store", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(APP.requestTimeoutMs)]) })
       .then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error || "Could not load overview."); return result as OverviewData; })
       .then(result => { if (!controller.signal.aborted) { setData(result); setError(null); } })
       .catch(error => { if (!controller.signal.aborted) setError(error instanceof Error ? error.message : "Could not load overview."); });
     return () => controller.abort();
   }, [items, clubId, includeArchived, retry]);
-  const choices = data?.clubs ?? [{ id: APP.clubId, name: APP.clubName }];
-  const current = data?.clubId === clubId && data.includeArchived === includeArchived ? data : null;
+  const choices = data?.clubs ?? [];
+  const current = data && (!clubId || data.clubId === clubId) && data.includeArchived === includeArchived ? data : null;
   const driverList = (rows: OverviewRow[], label: string) => <div><h4>{label}</h4>{rows.length ? <ul className="insight-list">{rows.map(row => <li key={row.id}><button onClick={() => onHistory(row.id)}>{row.name}</button><strong className={row.delta < 0 ? "insight-down" : "insight-up"}>{signed(row.delta)} <small>({percent(row.percent)})</small></strong><span>{money(row.previous)} last paid → {money(row.current)} latest{row.stale ? " · stale price" : ""}</span></li>)}</ul> : <p>No comparable {label.toLowerCase()}.</p>}</div>;
   const maxMovement = Math.max(1, ...(current?.trend.map(p => Math.abs(p.percent ?? 0)) ?? []));
   return <section className="overview" aria-label="All-data price overview">
-    <div className="overview-controls"><label>Recorded club<select value={clubId} onChange={event => setClubId(event.target.value)}>{choices.map(club => <option key={club.id} value={club.id}>{club.name} · Club {club.id}</option>)}</select></label><label className="overview-check"><input type="checkbox" checked={includeArchived} onChange={event => setIncludeArchived(event.target.checked)} /> Include archived items</label></div>
+    <div className="overview-controls"><label>Recorded club<select value={clubId} onChange={event => setClubId(event.target.value)}><option value="">Automatic · recorded club</option>{choices.map(club => <option key={club.id} value={club.id}>{club.name} · Club {club.id}</option>)}</select></label><label className="overview-check"><input type="checkbox" checked={includeArchived} onChange={event => setIncludeArchived(event.target.checked)} /> Include archived items</label></div>
     {error && <p className="load-error" role="alert">{error} {current && "Last loaded overview is shown."} <button className="secondary" onClick={() => setRetry(value => value + 1)}>Retry</button></p>}
     {!current ? <p role="status">{error ? "Overview unavailable." : "Loading full saved history…"}</p> : <>
       <p className="overview-note">{current.clubName} · Club {current.clubId} · {includeArchived ? "Active and archived items" : "Active items"}. One retail package per product; these are recorded price comparisons, not spending or realized savings. Updated {new Date(current.generatedAt).toLocaleTimeString()}.</p>

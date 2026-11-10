@@ -1,10 +1,10 @@
 import { parsePurchase } from "./purchase.ts";
 import type { Purchase } from "./purchase.ts";
 import { APP } from "./config.ts";
-import { record } from "./items.ts";
+import { record, isClubLocation } from "./items.ts";
 import { productId } from "./prices.ts";
 
-export interface PurchasedProduct { url: string; name: string; purchase?: Purchase }
+export interface PurchasedProduct { url: string; name: string; purchase?: Purchase; clubId?: string | null; clubName?: string | null }
 export function isOrderPage(value: unknown): boolean {
   if (typeof value !== "string") return false;
   try {
@@ -24,7 +24,9 @@ export function purchasedProduct(value: unknown): PurchasedProduct | null {
   if (!name || /^(?:buy (?:it )?again|product(?: image)?|view product)$/i.test(name)) name = url.pathname.split("/")[2]?.replaceAll("-", " ") || "BJ’s product";
   let purchase: Purchase | undefined;
   if (input.purchase !== undefined) { try { purchase = parsePurchase(input.purchase); } catch { return null; } }
-  return { url: url.href, name: name.slice(0, 300), ...(purchase ? { purchase } : {}) };
+  const location = { clubId: input.clubId ?? purchase?.clubId ?? null, clubName: input.clubName ?? purchase?.clubName ?? null };
+  if (!isClubLocation(location) || (purchase?.clubId && location.clubId !== purchase.clubId)) return null;
+  return { ...(location.clubId ? location : {}), url: url.href, name: name.slice(0, 300), ...(purchase ? { purchase } : {}) };
 }
 export function purchasedProducts(links: unknown[]): PurchasedProduct[] {
   const products = new Map<string, PurchasedProduct>();
