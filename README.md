@@ -37,7 +37,7 @@ and refresh app and product pages when upgrading; older protocols disconnect saf
 Requirements: Node.js >=22.13, npm, and .NET 8 SDK for the full Windows release build.
 The published optional native launcher needs .NET 8 Runtime.
 
-From the source/ directory:
+For development or a full native release, run these commands from source/:
 
 ```sh
 npm ci
@@ -46,7 +46,10 @@ npm run release
 ```
 
 Double-click **Start Club Price Watch.bat** in the repository root. Keep its server
-window open. The app opens at **http://localhost:3000**.
+window open. On the first run, it installs dependencies and generates the browser
+extension automatically; this needs an internet connection but no .NET build.
+The app opens at **http://localhost:3000**. The launcher keeps its output visible until
+you press a key, including when another app server is already running.
 
 For extension setup, open the same batch file and press **2**. Setup opens Extensions
 and copies the generated folder path. Enable developer mode, choose **Load unpacked**,
