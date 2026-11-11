@@ -67,6 +67,11 @@ npm run check
 npm run release
 ```
 
+Pushing a matching version tag such as `v2.2.1` runs the Windows release checks and
+creates a draft GitHub Release with Windows/extension downloads and checksums.
+See [version release instructions](source/README.md#version-releases). Review and
+publish the draft yourself; container publication remains manual.
+
 Double-click **Start Club Price Watch.bat** in the repository root. Keep its server
 window open. On the first run, it installs dependencies and generates the browser
 extension automatically; this needs an internet connection but no .NET build.

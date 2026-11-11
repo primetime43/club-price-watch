@@ -1,0 +1,52 @@
+name: Draft version release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: source
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: source/package-lock.json
+      - name: Verify tag and source versions
+        run: node --experimental-strip-types scripts/verify-release.ts "$env:GITHUB_REF_NAME"
+      - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d # v5.0.0
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check and build Windows release
+        run: npm run release
+      - name: Package selected sources and generated files
+        run: ./scripts/package-release.ps1 -Tag $env:GITHUB_REF_NAME
+      - name: Create draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $assets = Get-ChildItem -LiteralPath ".build/release-assets/$env:GITHUB_REF_NAME" -File
+          gh release create "$env:GITHUB_REF_NAME" @($assets.FullName) --verify-tag --draft --generate-notes --title "Club Price Watch $env:GITHUB_REF_NAME"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not create the draft release. Existing releases are never overwritten.' }
