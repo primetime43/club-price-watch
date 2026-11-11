@@ -48,7 +48,7 @@ npm run release
 Double-click **Start Club Price Watch.bat** in the repository root. Keep its server
 window open. The app opens at **http://localhost:3000**.
 
-For extension setup, open the same batch file and press **S**. Setup opens Extensions
+For extension setup, open the same batch file and press **2**. Setup opens Extensions
 and copies the generated folder path. Enable developer mode, choose **Load unpacked**,
 and select checker/package/BrowserExtension/. Keep that folder at the same absolute
 path after loading it. Reload after rebuilding, then refresh app and BJ’s pages.

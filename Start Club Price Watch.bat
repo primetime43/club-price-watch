@@ -7,10 +7,10 @@ if /i "%~1"=="--setup-extension" (
 )
 if not "%~1"=="" goto launch
 echo.
-echo   A - Open the app
-echo   S - Set up the browser extension
+echo   1 - Open the app
+echo   2 - Set up the browser extension
 echo.
-choice /c AS /t 5 /d A /n /m "Press S for setup, or wait to open the app: "
+choice /c 12 /t 5 /d 1 /n /m "Press 1 to open the app or 2 for setup (opens app in 5 seconds): "
 if errorlevel 2 call "%~dp0checker\package\tools\Setup Browser Extension.cmd"
 :launch
 cd /d "%~dp0source"
