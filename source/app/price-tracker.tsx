@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { TrackedItem } from "../core/items.ts";
+import { APP } from "../core/config.ts";
 import { clubNumber } from "../core/clubs.ts";
 import { itemCheckState } from "../core/checks.ts";
 import { priceChange as changeFor, targetReached, watchlistView } from "../core/watchlist-view.ts";
@@ -345,7 +346,7 @@ export default function PriceTracker() {
 
 
 
-      <footer><span>Club Price Watch</span><p>Independent personal tracker. Not affiliated with BJ’s Wholesale Club.</p><a href="https://www.bjs.com/" target="_blank" rel="noreferrer">Visit bjs.com ↗</a></footer>
+      <footer><span>Club Price Watch · v{APP.version}</span><p>Independent personal tracker. Not affiliated with BJ’s Wholesale Club.</p><a href="https://www.bjs.com/" target="_blank" rel="noreferrer">Visit bjs.com ↗</a></footer>
 
       {mergeItem && <MergeItems source={mergeItem} items={items} busyIds={new Set(items.filter(item => { const state = itemCheckState(item, checkStates[item.id]); return Boolean(checkStates[item.id]) && (state.status === "waiting" || state.status === "checking"); }).map(item => item.id))} onClose={() => setMergeItem(null)} onMerged={async () => { await loadItems(); setNotice("Items merged. Full history combined and the old product link remembered."); }} />}
       {historyItem && <PriceHistory item={historyItem} onClose={() => setHistoryItemId(null)} />}
