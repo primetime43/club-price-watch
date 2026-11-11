@@ -43,11 +43,14 @@
 .restore-section > p { font-size: 13px; line-height: 1.6; color: var(--muted); }
 .backup-file { display: block; font-size: 13px; font-weight: 700; }
 .backup-preview { background: var(--sage); border-radius: 8px; padding: 12px; }
-.restore-modes { border: 0; padding: 0; margin: 18px 0; font-size: 13px; line-height: 1.5; }
-.restore-modes legend { font-weight: 700; margin-bottom: 10px; }
-.restore-modes label { display: flex; align-items: flex-start; gap: 10px; margin: 12px 0; }
-.restore-modes input { width: auto; flex-shrink: 0; margin: 4px 0 0; }
-.restore-modes label > span { float: none; color: var(--ink); font-weight: 400; }
+.backup-backdrop { grid-template-rows: minmax(0, 1fr); }
+.backup-modal { min-width: 0; min-height: 0; max-height: calc(100dvh - 40px); overscroll-behavior: contain; }
+.backup-modal h2 { padding-right: 28px; }
+.backup-modal .restore-modes { min-inline-size: 0; width: 100%; border: 0; padding: 0; margin: 18px 0; font-size: 13px; line-height: 1.5; }
+.backup-modal .restore-modes legend { font-weight: 700; margin-bottom: 10px; }
+.backup-modal .restore-modes label { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: start; gap: 10px; margin: 12px 0; cursor: pointer; }
+.backup-modal .restore-modes input { width: 16px; height: 16px; min-width: 0; margin: 3px 0 0; padding: 0; border: 0; border-radius: 0; accent-color: var(--red); }
+.backup-modal .restore-modes label > span { min-width: 0; float: none; color: var(--ink); font-weight: 400; overflow-wrap: anywhere; }
 .replace-confirm { padding: 12px; background: var(--blush); border-radius: 8px; }
 
 .item-check-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 8px; }

@@ -42,7 +42,7 @@ export default function BackupControls({ onRestored }: { onRestored: () => Promi
   }
   return <>
     <button className="secondary check-prices" onClick={() => { setOpen(true); setError(null); setMessage(null); }}>Backup &amp; restore</button>
-    {open && <div className="modal-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) close(); }} onKeyDown={event => { if (event.key === "Escape") close(); }}>
+    {open && <div className="modal-backdrop backup-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) close(); }} onKeyDown={event => { if (event.key === "Escape") close(); }}>
       <section className="modal backup-modal" role="dialog" aria-modal="true" aria-labelledby="backup-title">
         <button className="modal-close" disabled={busy} onClick={close} aria-label="Close">×</button>
         <h2 id="backup-title">Backup &amp; restore</h2>
