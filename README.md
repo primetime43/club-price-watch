@@ -4,6 +4,28 @@ A self-hosted BJ’s Wholesale Club price watchlist with a companion browser ext
 Your normal signed-in browser checks prices; the dashboard and database run on your PC
 or Docker host. Independent project; not affiliated with or endorsed by BJ’s.
 
+## Screenshots
+
+All screenshots use invented products, prices, purchase history and a fictional club.
+No personal account or real shopping data is shown.
+
+![Watchlist with sample price drops, targets and recorded ranges](source/docs/screenshots/watchlist.png)
+
+<details>
+<summary>Price overview and full history</summary>
+
+Compare a matched basket with previous purchase prices and see what increased or decreased.
+
+![Price overview comparing fictional purchase prices with latest saved prices](source/docs/screenshots/overview.png)
+
+Inspect recorded prices, dates and club provenance for an individual product.
+
+![Price history chart and exact records for a fictional coffee product](source/docs/screenshots/price-history.png)
+
+</details>
+
+See the [synthetic preview](source/screenshots/README.md) to refresh these screenshots safely.
+
 ## Features
 
 - Watchlists, targets, shopping selections, search, sorting and archiving.

@@ -6,6 +6,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "screenshots:preview": "vite --config screenshots/vite.config.ts",
     "dev": "vinext dev",
     "build": "node --experimental-strip-types scripts/build.ts site",
     "build:extension": "node --experimental-strip-types scripts/build.ts extension",

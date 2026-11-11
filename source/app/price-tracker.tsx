@@ -221,7 +221,7 @@ export default function PriceTracker() {
         </div>
       </header>
 
-      <section className="dashboard-intro" id="top"><div><p className="eyebrow">YOUR CLUB. YOUR PRICES.</p><h1>A little patience.<br />A better price.</h1><p>Your watchlist, with every price check in one place.</p></div><aside><span>QUICK ADD WHILE YOU SHOP</span><strong>See it on BJ’s? Watch it here.</strong><p>Use Add to Price Watch on a product page, or open the extension and choose Add current product.</p><button className="secondary" onClick={() => setAddOpen(true)}>Or paste a product link →</button></aside></section>
+      <section className="dashboard-intro" id="top"><div><p className="eyebrow">YOUR CLUB. YOUR PRICES.</p><h1>Track prices.<br />See the history.</h1><p>Your watchlist, with every price check in one place.</p></div><aside><span>QUICK ADD WHILE YOU SHOP</span><strong>See it on BJ’s? Watch it here.</strong><p>Use Add to Price Watch on a product page, or open the extension and choose Add current product.</p><button className="secondary" onClick={() => setAddOpen(true)}>Or paste a product link →</button></aside></section>
 
       <section className="workspace" id="watchlist">
         <nav className="view-tabs" aria-label="Watchlist views"><button aria-pressed={view === "watchlist"} onClick={() => setView("watchlist")}>Watchlist</button><button aria-pressed={view === "overview"} onClick={() => setView("overview")}>Overview</button></nav>

@@ -1,0 +1,14 @@
+.screenshot-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #263c33;
+  color: #fff;
+  padding: 9px 20px;
+  text-align: center;
+  font: 600 12px/14px system-ui, sans-serif;
+  letter-spacing: .025em;
+}
+
+/* Keep the app's sticky header below the preview-only data label. */
+.topbar { top: 32px; }
